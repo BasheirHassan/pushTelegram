@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<modification>
+    <code>pushTelegram</code>
+    <name>pushTelegram</name>
+    <version>1.0</version>
+    <author>Basheir</author>
+    <link>http://4techs.net</link>
+    <file path="catalog/model/checkout/order.php">
+        <operation>
+            <search><![CDATA[
+            if (!$order_info['order_status_id'] && $order_status_id) {
+            ]]></search>
+            <add position="after"><![CDATA[
+
+           $order_product_query = $this->db->query("SELECT * FROM " . DB_PREFIX . "order_product WHERE order_id = '" . (int)$order_id . "'");
+		   $order_total_query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "order_total` WHERE order_id = '" . (int)$order_id . "' ORDER BY sort_order ASC");
+
+            foreach($order_product_query->rows as $ocProduct){
+
+                     $productListingForPush[] = $ocProduct;
+             }
+      $this->load->model('tool/pushtelegram');
+      $sendData['firstname'] = $order_info['shipping_firstname'];
+      $sendData['lastname'] = $order_info['shipping_lastname'];
+      //$sendData['status'] = $order_status;
+      $sendData['products'] = $productListingForPush;
+      $sendData['total'] = $order_total_query->rows[0]['value'];
+      $this->model_tool_pushtelegram->sendOrderAlert($sendData);
+            ]]></add>
+        </operation>
+    </file>
+<file path="catalog/model/account/customer.php">
+        <operation>
+            <search><![CDATA[
+              $this->load->model('account/customer_group');
+            ]]></search>
+            <add position="after"><![CDATA[
+            $this->load->model('tool/pushtelegram');
+      $sendData['firstname'] = $data['firstname'];
+      $sendData['lastname'] = $data['lastname'];
+      $this->model_tool_pushtelegram->sendAccountAlert($sendData);
+            ]]></add>
+        </operation>
+    </file>
+</modification>
