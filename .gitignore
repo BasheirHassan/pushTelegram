@@ -4,6 +4,9 @@ admin/config.php
 
 !index.html
 
+.DS_Store
+
+
 download/
 image/data/
 image/cache/
